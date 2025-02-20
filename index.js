@@ -82,6 +82,50 @@ app.put('/tasks/:id', async (req, res) => {
       }
 });
 
+// Update a task by ID
+app.put('/tasks/update/:id', async (req, res) => {
+      const { id } = req.params;
+      const { title, description, priority } = req.body;
+
+      try {
+            // Build dynamic query to update only the fields that are provided
+            const fields = [];
+            const values = [];
+
+            if (title) {
+                  fields.push('title = $' + (fields.length + 1));
+                  values.push(title);
+            }
+            if (description) {
+                  fields.push('description = $' + (fields.length + 1));
+                  values.push(description);
+            }
+            if (priority) {
+                  fields.push('priority = $' + (fields.length + 1));
+                  values.push(priority);
+            }
+
+            // If no fields to update, return a message
+            if (fields.length === 0) {
+                  return res.status(400).json({ error: 'No data provided to update' });
+            }
+
+            values.push(id); // Adding task ID to the values array at the end
+
+            // Execute the update query
+            const query = `UPDATE tasks SET ${fields.join(', ')} WHERE id = $${values.length} RETURNING *`;
+            const result = await pool.query(query, values);
+
+            if (result.rows.length === 0) {
+                  return res.status(404).json({ error: 'Task not found' });
+            }
+
+            res.json(result.rows[0]);
+      } catch (error) {
+            res.status(500).json({ error: 'Failed to update task' });
+      }
+});
+
 // Delete task
 app.delete('/tasks/:id', async (req, res) => {
       const { id } = req.params;
