@@ -88,7 +88,7 @@ app.put('/tasks/update/:id', async (req, res) => {
       const { title, description, priority } = req.body;
 
       try {
-            // Build dynamic query to update only the fields that are provided
+            
             const fields = [];
             const values = [];
 
@@ -121,7 +121,8 @@ app.put('/tasks/update/:id', async (req, res) => {
             }
 
             res.json(result.rows[0]);
-      } catch (error) {
+      }
+      catch (error) {
             res.status(500).json({ error: 'Failed to update task' });
       }
 });
